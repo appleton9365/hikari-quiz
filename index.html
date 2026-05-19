@@ -117,6 +117,39 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
 </style>
 </head>
 <body>
+<div id="pw-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:#1e293b;padding:40px;border-radius:16px;text-align:center;width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+    <div style="font-size:32px;margin-bottom:12px;">📡</div>
+    <div style="color:#e2e8f0;font-size:18px;font-weight:700;margin-bottom:6px;">光回線知識研修クイズ</div>
+    <div style="color:#94a3b8;font-size:13px;margin-bottom:24px;">パスワードを入力してください</div>
+    <input id="pw-input" type="password" placeholder="パスワード"
+      style="width:100%;padding:12px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;font-size:15px;box-sizing:border-box;outline:none;margin-bottom:12px;"
+      onkeydown="if(event.key==='Enter')checkPw()">
+    <div id="pw-error" style="color:#f87171;font-size:13px;height:18px;margin-bottom:8px;"></div>
+    <button onclick="checkPw()"
+      style="width:100%;padding:12px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;">
+      入室する
+    </button>
+  </div>
+</div>
+<script>
+async function checkPw(){
+  const val = document.getElementById('pw-input').value;
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
+  const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hex === 'bf9275cbae8cb9c3f1f4d2a4a41f46997f3760a727932d9095aeb8da412ed858'){
+    document.getElementById('pw-screen').style.display='none';
+  } else {
+    document.getElementById('pw-error').textContent='パスワードが違います';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('pw-input').focus();
+});
+</script>
+
 <div id="app">
 
 <!-- タイトル画面 -->
