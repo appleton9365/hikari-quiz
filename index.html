@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>光回線クイズ｜第三営業部 新人研修 v22</title>
+<title>光回線クイズ｜第三営業部 新人研修 v23</title>
 <style>
 :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1c2538;--border:#2a3550;--accent:#3b82f6;--accent2:#60a5fa;--correct:#22c55e;--wrong:#ef4444;--gold:#f59e0b;--text:#e2e8f0;--muted:#94a3b8;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px;-webkit-text-size-adjust:100%}
+body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px;-webkit-text-size-adjust:100%;overflow:hidden;position:relative}
 #app{width:100%;max-width:700px;position:relative;z-index:101}
 /* TITLE */
 #screen-title{text-align:center;padding:40px 20px}
@@ -116,10 +116,10 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
 .hidden{display:none!important}
 
 /* ===== VIDEO OVERLAY ===== */
-/* GPU強制レイヤー化でiPhone Safariのグレー帯を解消 */
+/* position:fixed + height:100% + will-change でiPhone Safari帯問題を解消 */
 .effect-video{
   position:fixed;top:0;left:0;
-  width:100%;height:100vh;height:100dvh;
+  width:100%;height:100%;
   object-fit:cover;
   pointer-events:none;
   display:none;
@@ -128,6 +128,7 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
   -webkit-transform:translateZ(0);
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
+  will-change:transform;
 }
 .effect-video.active{display:block}
 /* confetti・rain：テキストより前面 */
@@ -636,16 +637,17 @@ function showSetEnd(){
   const btn=document.getElementById('btn-continue-set');
   const newBtn=btn.cloneNode(true);btn.parentNode.replaceChild(newBtn,btn);
   if(state.current>=25){newBtn.textContent='フィナーレへ！';newBtn.addEventListener('click',showFinale,{passive:false})}
-  else if(ns===4){newBtn.textContent='🔥鬼パートへ進む！';newBtn.addEventListener('click',contNext,{passive:false})}
-  else{newBtn.textContent=(SC[ns]?.name||'次')+'へ進む！';newBtn.addEventListener('click',contNext,{passive:false})}
+  else if(ns===4){newBtn.textContent='🔥鬼パートへ進む！';newBtn.addEventListener('click',()=>contNext(newBtn),{passive:false})}
+  else{newBtn.textContent=(SC[ns]?.name||'次')+'へ進む！';newBtn.addEventListener('click',()=>contNext(newBtn),{passive:false})}
 }
-function contNext(){
+function contNext(triggerBtn){
   // セットスタート画面では炎を非表示（ストリークはリセットしない）
   if(_streakFireOn){_stopVid(_vidF);}
   showScreen('quiz');
-  // 画面遷移後に炎を復活（ストリーク継続中なら）
-  if(_streakFireOn){setTimeout(()=>{_playVid(_vidF);},300);}
   renderQ();
+  // iOSはユーザータップのイベントスタック内でのみ自動再生可能
+  // → タップ直後（同期）に_playVid()を呼ぶことで制限を回避
+  if(_streakFireOn){ _playVid(_vidF); }
 }
 
 function showFinale(){
@@ -813,6 +815,14 @@ function _showStreakPopup(n) {
   p.classList.add('show');
   _streakPopTimer = setTimeout(() => { p.classList.remove('show'); }, 1500);
 }
+
+// ホーム画面→Safari復帰時に炎を再開
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && _streakFireOn) {
+    // iOS復帰直後は再生APIが安定しないため少し待ってから再生
+    setTimeout(() => { _playVid(_vidF); }, 300);
+  }
+});
 
 // フィナーレ演出
 function _playFinaleEffect(pts) {
