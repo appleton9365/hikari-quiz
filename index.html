@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>光回線クイズ｜第三営業部 新人研修 v23</title>
@@ -122,13 +124,16 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
   width:100%;height:100%;
   object-fit:cover;
   pointer-events:none;
-  display:none;
+  /* display切り替えをしない → iOS mix-blend-modeのGPUレイヤー破棄バグを回避 */
+  opacity:0;
+  visibility:hidden;
   mix-blend-mode:screen;
   -webkit-transform:translate3d(0,0,0);
   transform:translate3d(0,0,0);
   z-index:0;
+  transition:none;
 }
-.effect-video.active{display:block}
+.effect-video.active{opacity:1;visibility:visible}
 /* confetti・rain：テキストより前面（#app内absolute基準） */
 #vid-confetti{z-index:10}
 #vid-rain{z-index:10}
@@ -646,7 +651,7 @@ function contNext(){
   // ただしiOSで何らかの理由で止まっていた場合は念のため再生
   showScreen('quiz');
   renderQ();
-  if(_streakFireOn && (_vidF.paused || _vidF.style.display==='none')){
+  if(_streakFireOn && (_vidF.paused || !_vidF.classList.contains('active'))){
     _playVid(_vidF, false);  // ループ途中から再開（リセットしない）
   }
 }
@@ -735,23 +740,22 @@ document.addEventListener('touchstart', () => {
   if (_vidUnlocked) return;
   _vidUnlocked = true;
   [_vidC, _vidR, _vidF].forEach(v => {
-    v.load(); // バッファを明示的に読み込み
+    v.load();
+    // activeクラスは付けず再生→停止でiOSのデコーダーをアンロックだけする
     v.play().then(() => { v.pause(); v.currentTime = 0; }).catch(() => {});
   });
 }, {once: true, passive: true});
 
 function _stopVid(v) {
   v.pause();
-  v.style.display = 'none';
-  v.currentTime = 0;
+  // display切り替えしない→opacity/visibilityで非表示（GPUレイヤー維持）
   v.classList.remove('active');
+  v.currentTime = 0;
 }
 function _playVid(v, fromStart) {
-  v.style.display = 'block';
-  v.classList.add('active');
-  // fromStart=trueの時だけ先頭から再生（デフォルトは現在位置から再開）
-  // ← currentTime=0リセットによる一瞬停止を防ぐ
+  // display切り替えしない→opacity/visibilityで表示（GPUレイヤー維持）
   if(fromStart !== false){ v.currentTime = 0; }
+  v.classList.add('active');
   const p = v.play(); if (p && p.catch) p.catch(() => {});
 }
 function _stopAllVid() {
@@ -796,7 +800,7 @@ function _streakCorrect() {
   if (_streak >= 3) {
     _streakFireOn = true;
     // 炎が再生されていない場合は必ず再起動（confettiで止まってた場合も対応）
-    if (_vidF.paused || _vidF.style.display === 'none') { _playVid(_vidF); }
+    if (_vidF.paused || !_vidF.classList.contains('active')) { _playVid(_vidF); }
     _showStreakPopup(_streak);
   }
 }
