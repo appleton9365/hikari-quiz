@@ -116,10 +116,27 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
 .hidden{display:none!important}
 
 /* ===== VIDEO OVERLAY ===== */
-.effect-video{position:fixed;top:0;left:0;width:100%;height:100vh;height:100dvh;object-fit:cover;pointer-events:none;z-index:100;display:none;mix-blend-mode:screen}
+/* GPU強制レイヤー化でiPhone Safariのグレー帯を解消 */
+.effect-video{
+  position:fixed;top:0;left:0;
+  width:100%;height:100vh;height:100dvh;
+  object-fit:cover;
+  pointer-events:none;
+  display:none;
+  mix-blend-mode:screen;
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
 .effect-video.active{display:block}
+/* confetti・rain：テキストより前面 */
+#vid-confetti{z-index:102}
+#vid-rain{z-index:102}
+/* fire：テキストより背面 */
+#vid-fire{z-index:99}
 /* ===== FLASH ===== */
-#flash-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99;opacity:0;background:white;transition:opacity .05s}
+#flash-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:103;opacity:0;background:white;transition:opacity .05s}
 /* ===== SHAKE ===== */
 @keyframes shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-8px)}30%{transform:translateX(8px)}45%{transform:translateX(-6px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}90%{transform:translateX(3px)}}
 body.shaking{animation:shake 0.5s ease}
