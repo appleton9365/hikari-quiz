@@ -9,7 +9,7 @@
 <style>
 :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1c2538;--border:#2a3550;--accent:#3b82f6;--accent2:#60a5fa;--correct:#22c55e;--wrong:#ef4444;--gold:#f59e0b;--text:#e2e8f0;--muted:#94a3b8;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px;-webkit-text-size-adjust:100%;overflow:hidden;position:relative}
+body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px;-webkit-text-size-adjust:100%}
 #app{width:100%;max-width:700px;position:relative;z-index:101}
 /* TITLE */
 #screen-title{text-align:center;padding:40px 20px}
@@ -116,19 +116,16 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
 .hidden{display:none!important}
 
 /* ===== VIDEO OVERLAY ===== */
-/* position:fixed + height:100% + will-change でiPhone Safari帯問題を解消 */
+/* position:fixed + top/left/right/bottom:0 + 100vw/100vh でiPhone Safari帯問題に対応 */
 .effect-video{
-  position:fixed;top:0;left:0;
-  width:100%;height:100%;
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  width:100vw;height:100vh;
   object-fit:cover;
   pointer-events:none;
   display:none;
   mix-blend-mode:screen;
-  transform:translateZ(0);
-  -webkit-transform:translateZ(0);
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  will-change:transform;
+  -webkit-transform:translate3d(0,0,0);
+  transform:translate3d(0,0,0);
 }
 .effect-video.active{display:block}
 /* confetti・rain：テキストより前面 */
@@ -619,8 +616,7 @@ function showCooldown(){
 }
 
 function showSetEnd(){
-  // セット終了画面では炎を表示しない（ストリークフラグは維持）
-  if(_streakFireOn){_stopVid(_vidF);}
+  // セット結果画面でもストリーク中は炎を止めない（ずっと再生し続ける）
   const s=si(state.current-1);const sc=SC[s];const ss=state.setScores[s];
   showScreen('setend');
   document.getElementById('setend-label').textContent=sc.name+' '+sc.label+' 結果';
@@ -637,17 +633,17 @@ function showSetEnd(){
   const btn=document.getElementById('btn-continue-set');
   const newBtn=btn.cloneNode(true);btn.parentNode.replaceChild(newBtn,btn);
   if(state.current>=25){newBtn.textContent='フィナーレへ！';newBtn.addEventListener('click',showFinale,{passive:false})}
-  else if(ns===4){newBtn.textContent='🔥鬼パートへ進む！';newBtn.addEventListener('click',()=>contNext(newBtn),{passive:false})}
-  else{newBtn.textContent=(SC[ns]?.name||'次')+'へ進む！';newBtn.addEventListener('click',()=>contNext(newBtn),{passive:false})}
+  else if(ns===4){newBtn.textContent='🔥鬼パートへ進む！';newBtn.addEventListener('click',contNext,{passive:false})}
+  else{newBtn.textContent=(SC[ns]?.name||'次')+'へ進む！';newBtn.addEventListener('click',contNext,{passive:false})}
 }
-function contNext(triggerBtn){
-  // セットスタート画面では炎を非表示（ストリークはリセットしない）
-  if(_streakFireOn){_stopVid(_vidF);}
+function contNext(){
+  // ストリーク中は炎をそのまま再生し続ける（止めない・再起動しない）
+  // ただしiOSで何らかの理由で止まっていた場合は念のため再生
   showScreen('quiz');
   renderQ();
-  // iOSはユーザータップのイベントスタック内でのみ自動再生可能
-  // → タップ直後（同期）に_playVid()を呼ぶことで制限を回避
-  if(_streakFireOn){ _playVid(_vidF); }
+  if(_streakFireOn && (_vidF.paused || _vidF.style.display==='none')){
+    _playVid(_vidF, false);  // ループ途中から再開（リセットしない）
+  }
 }
 
 function showFinale(){
@@ -745,10 +741,12 @@ function _stopVid(v) {
   v.currentTime = 0;
   v.classList.remove('active');
 }
-function _playVid(v) {
+function _playVid(v, fromStart) {
   v.style.display = 'block';
   v.classList.add('active');
-  v.currentTime = 0;
+  // fromStart=trueの時だけ先頭から再生（デフォルトは現在位置から再開）
+  // ← currentTime=0リセットによる一瞬停止を防ぐ
+  if(fromStart !== false){ v.currentTime = 0; }
   const p = v.play(); if (p && p.catch) p.catch(() => {});
 }
 function _stopAllVid() {
@@ -820,7 +818,7 @@ function _showStreakPopup(n) {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && _streakFireOn) {
     // iOS復帰直後は再生APIが安定しないため少し待ってから再生
-    setTimeout(() => { _playVid(_vidF); }, 300);
+    setTimeout(() => { _playVid(_vidF, false); }, 300);  // ループ途中から再開
   }
 });
 
