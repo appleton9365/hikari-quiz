@@ -7,12 +7,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>光回線クイズ｜第三営業部 新人研修 v24</title>
+<title>光回線クイズ｜第三営業部 新人研修 v24.1</title>
 <style>
 :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1c2538;--border:#2a3550;--accent:#3b82f6;--accent2:#60a5fa;--correct:#22c55e;--wrong:#ef4444;--gold:#f59e0b;--text:#e2e8f0;--muted:#94a3b8;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background-color:#0a0e1a}
-body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px;-webkit-text-size-adjust:100%}
+body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px;-webkit-text-size-adjust:100%;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom))}
 #app{width:100%;max-width:700px}
 /* TITLE */
 #screen-title{text-align:center;padding:40px 20px}
@@ -141,11 +141,21 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
   position:relative;z-index:1
 }
 
-/* ===== FLASH（正解時の白フラッシュ） ===== */
+/* ===== FLASH（正解時の白フラッシュ・v24.1：display:none方式） =====
+   iOS 26 Safari Liquid Glassの白サンプリング対策。
+   background:white で position:fixed のフルスクリーン要素は
+   opacity:0 でもバー色を白に確定させる原因になるため display:none で完全に消す。 */
 #flash-overlay{
+  display:none;
   position:fixed;top:0;left:0;width:100%;height:100%;
-  pointer-events:none;z-index:500;opacity:0;
-  background:white;transition:opacity .05s
+  pointer-events:none;z-index:500;
+  background:white;
+}
+#flash-overlay.show{display:block;animation:flashAnim 0.15s ease-out}
+@keyframes flashAnim{
+  0%{opacity:0}
+  20%{opacity:0.6}
+  100%{opacity:0}
 }
 
 /* ===== SHAKE（不正解時の画面シェイク） ===== */
@@ -160,8 +170,9 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
 }
 body.shaking{animation:shake 0.5s ease}
 
-/* ===== STREAK POPUP ===== */
+/* ===== STREAK POPUP（v24.1：display:none方式） ===== */
 #streak-popup{
+  display:none;
   position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%) scale(0);
   z-index:20;
@@ -172,7 +183,7 @@ body.shaking{animation:shake 0.5s ease}
   min-width:200px;max-width:85vw;
   box-shadow:0 0 40px rgba(249,115,22,0.4)
 }
-#streak-popup.show{transform:translate(-50%,-50%) scale(1)}
+#streak-popup.show{display:block;transform:translate(-50%,-50%) scale(1)}
 #streak-fires{font-size:28px;line-height:1;white-space:nowrap;letter-spacing:2px}
 #streak-text{
   font-size:clamp(18px,5vw,26px);font-weight:900;color:#f97316;
@@ -241,7 +252,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <!-- タイトル画面 -->
 <div id="screen-title">
   <div class="logo-badge">第三営業部 新人研修</div>
-  <div class="title-main">光回線<br>マスタークイズv24</div>
+  <div class="title-main">光回線<br>マスタークイズv24.1</div>
   <div class="title-sub">727問バンクからランダム25問出題<br>開通前確認の知識を総チェック！</div>
   <div class="mode-grid">
     <button class="mode-btn full" onclick="startQuiz(-1)">全セット（標準）<span class="mode-label">基礎〜鬼パートまで順番に全25問</span></button>
@@ -826,11 +837,14 @@ function _stopAllVid() {
 
 // confetti（正解時）
 let _confettiTimer = null;
+let _flashTimer = null;
 function _playCorrectEffect() {
   _stopVid(_vidR);
   _stopVid(_vidC);
-  _flash.style.opacity = '0.6';
-  setTimeout(() => { _flash.style.opacity = '0'; }, 80);
+  // flash：display:none⇔block方式（iOS 26 Liquid Glass対策）
+  _flash.classList.add('show');
+  if (_flashTimer) clearTimeout(_flashTimer);
+  _flashTimer = setTimeout(() => { _flash.classList.remove('show'); }, 200);
   _playVid(_vidC);
   if (_confettiTimer) clearTimeout(_confettiTimer);
   _confettiTimer = setTimeout(() => {
