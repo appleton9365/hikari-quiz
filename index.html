@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>光回線クイズ｜第三営業部 新人研修 v24.4</title>
+<title>光回線クイズ｜第三営業部 新人研修 v24.5</title>
 <style>
 :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1c2538;--border:#2a3550;--accent:#3b82f6;--accent2:#60a5fa;--correct:#22c55e;--wrong:#ef4444;--gold:#f59e0b;--text:#e2e8f0;--muted:#94a3b8;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -144,25 +144,9 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
   position:relative;z-index:1
 }
 
-/* ===== FLASH（正解時の白フラッシュ・v24.4：safe-area内のみ） =====
-   iOS 26 Safari Liquid Glassの白サンプリングを完全回避するため
-   ステータスバー領域・ホームインジケータ領域を避けて safe-area 内のみに表示。 */
-#flash-overlay{
-  display:none;
-  position:fixed;
-  top:env(safe-area-inset-top);
-  left:0;
-  right:0;
-  bottom:env(safe-area-inset-bottom);
-  pointer-events:none;z-index:500;
-  background:white;
-}
-#flash-overlay.show{display:block;animation:flashAnim 0.15s ease-out}
-@keyframes flashAnim{
-  0%{opacity:0}
-  20%{opacity:0.6}
-  100%{opacity:0}
-}
+/* ===== FLASH（v24.5：完全撤廃） =====
+   iOS 26 Safari Liquid Glassの白サンプリング問題を完全回避するため
+   confetti時の白フラッシュ演出を撤廃。confetti動画だけで正解演出は十分。 */
 
 /* ===== SHAKE（不正解時の画面シェイク） ===== */
 @keyframes shake{
@@ -248,7 +232,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 <video id="vid-fire" class="effect-video" playsinline webkit-playsinline muted loop preload="auto">
   <source src="https://appleton9365.github.io/hikari-quiz/fire01.mp4" type="video/mp4">
 </video>
-<div id="flash-overlay"></div>
 <div id="streak-popup">
   <div id="streak-fires">🔥🔥🔥</div>
   <div id="streak-text">3連続正解！</div>
@@ -260,7 +243,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <!-- タイトル画面 -->
 <div id="screen-title">
   <div class="logo-badge">第三営業部 新人研修</div>
-  <div class="title-main">光回線<br>マスタークイズv24.4</div>
+  <div class="title-main">光回線<br>マスタークイズv24.5</div>
   <div class="title-sub">727問バンクからランダム25問出題<br>開通前確認の知識を総チェック！</div>
   <div class="mode-grid">
     <button class="mode-btn full" onclick="startQuiz(-1)">全セット（標準）<span class="mode-label">基礎〜鬼パートまで順番に全25問</span></button>
@@ -791,11 +774,10 @@ function showReview(){
   });
 }
 
-// ===== エフェクト管理（v24：display:none方式 + mix-blend-mode:screen + MP4） =====
+// ===== エフェクト管理（v24.5：display:none + mix-blend-mode:screen + MP4・flash撤廃版） =====
 const _vidC = document.getElementById('vid-confetti');
 const _vidR = document.getElementById('vid-rain');
 const _vidF = document.getElementById('vid-fire');
-const _flash = document.getElementById('flash-overlay');
 
 _vidC.style.opacity = '0.70';
 _vidR.style.opacity = '0.30';
@@ -843,16 +825,11 @@ function _stopAllVid() {
   _stopVid(_vidC); _stopVid(_vidR); _stopVid(_vidF);
 }
 
-// confetti（正解時）
+// confetti（正解時・v24.5：flash撤廃版）
 let _confettiTimer = null;
-let _flashTimer = null;
 function _playCorrectEffect() {
   _stopVid(_vidR);
   _stopVid(_vidC);
-  // flash：display:none⇔block方式（iOS 26 Liquid Glass対策）
-  _flash.classList.add('show');
-  if (_flashTimer) clearTimeout(_flashTimer);
-  _flashTimer = setTimeout(() => { _flash.classList.remove('show'); }, 200);
   _playVid(_vidC);
   if (_confettiTimer) clearTimeout(_confettiTimer);
   _confettiTimer = setTimeout(() => {
