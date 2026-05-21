@@ -10,7 +10,7 @@
 :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1c2538;--border:#2a3550;--accent:#3b82f6;--accent2:#60a5fa;--correct:#22c55e;--wrong:#ef4444;--gold:#f59e0b;--text:#e2e8f0;--muted:#94a3b8;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px;-webkit-text-size-adjust:100%}
-#app{width:100%;max-width:700px;position:relative;z-index:101}
+#app{width:100%;max-width:700px;position:relative;z-index:0}
 /* TITLE */
 #screen-title{text-align:center;padding:40px 20px}
 .logo-badge{display:inline-block;background:linear-gradient(135deg,#1e3a5f,#2563eb);border:1px solid var(--accent);border-radius:999px;padding:6px 18px;font-size:11px;letter-spacing:.1em;color:var(--accent2);text-transform:uppercase;margin-bottom:20px}
@@ -116,30 +116,33 @@ body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;b
 .hidden{display:none!important}
 
 /* ===== VIDEO OVERLAY ===== */
-/* position:fixed + top/left/right/bottom:0 + 100vw/100vh でiPhone Safari帯問題に対応 */
+/* #appの中にabsoluteで閉じ込め → iOSのsafe area帯問題を根本解決 */
 .effect-video{
   position:fixed;top:0;left:0;right:0;bottom:0;
-  width:100vw;height:100vh;
+  width:100%;height:100%;
   object-fit:cover;
   pointer-events:none;
   display:none;
   mix-blend-mode:screen;
   -webkit-transform:translate3d(0,0,0);
   transform:translate3d(0,0,0);
+  z-index:0;
 }
 .effect-video.active{display:block}
-/* confetti・rain：テキストより前面 */
-#vid-confetti{z-index:102}
-#vid-rain{z-index:102}
+/* confetti・rain：テキストより前面（#app内absolute基準） */
+#vid-confetti{z-index:10}
+#vid-rain{z-index:10}
 /* fire：テキストより背面 */
-#vid-fire{z-index:99}
+#vid-fire{z-index:-1}
+/* #app内のコンテンツはz-index:1で動画より前面 */
+#screen-title,#screen-quiz,#screen-cooldown,#screen-setend,#screen-finale,#screen-review{position:relative;z-index:1}
 /* ===== FLASH ===== */
-#flash-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:103;opacity:0;background:white;transition:opacity .05s}
+#flash-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:500;opacity:0;background:white;transition:opacity .05s}
 /* ===== SHAKE ===== */
 @keyframes shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-8px)}30%{transform:translateX(8px)}45%{transform:translateX(-6px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}90%{transform:translateX(3px)}}
 body.shaking{animation:shake 0.5s ease}
 /* ===== STREAK POPUP ===== */
-#streak-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:200;background:linear-gradient(135deg,#1a0a00,#3d1500);border:2px solid #f97316;border-radius:20px;padding:20px 36px;text-align:center;pointer-events:none;transition:transform .3s cubic-bezier(0.34,1.56,0.64,1);min-width:200px;max-width:85vw;box-shadow:0 0 40px rgba(249,115,22,0.4)}
+#streak-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);z-index:20;background:linear-gradient(135deg,#1a0a00,#3d1500);border:2px solid #f97316;border-radius:20px;padding:20px 36px;text-align:center;pointer-events:none;transition:transform .3s cubic-bezier(0.34,1.56,0.64,1);min-width:200px;max-width:85vw;box-shadow:0 0 40px rgba(249,115,22,0.4)}
 #streak-popup.show{transform:translate(-50%,-50%) scale(1)}
 #streak-fires{font-size:28px;line-height:1;white-space:nowrap;letter-spacing:2px}
 #streak-text{font-size:clamp(18px,5vw,26px);font-weight:900;color:#f97316;white-space:nowrap;margin-top:4px;text-shadow:0 0 20px rgba(249,115,22,0.8)}
@@ -148,23 +151,8 @@ body.shaking{animation:shake 0.5s ease}
 </head>
 <body>
 
-<!-- ===== エフェクト要素 ===== -->
-<video id="vid-confetti" class="effect-video" playsinline webkit-playsinline muted preload="auto">
-  <source src="https://appleton9365.github.io/hikari-quiz/confetti07.mp4" type="video/mp4">
-</video>
-<video id="vid-rain" class="effect-video" playsinline webkit-playsinline muted loop preload="auto">
-  <source src="https://appleton9365.github.io/hikari-quiz/rain1.mp4" type="video/mp4">
-</video>
-<video id="vid-fire" class="effect-video" playsinline webkit-playsinline muted loop preload="auto">
-  <source src="https://appleton9365.github.io/hikari-quiz/fire01.mp4" type="video/mp4">
-</video>
-<div id="flash-overlay"></div>
-<div id="streak-popup">
-  <div id="streak-fires">🔥🔥🔥</div>
-  <div id="streak-text">3連続正解！</div>
-  <div id="streak-combo">STREAK COMBO</div>
-</div>
-<div id="pw-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:9999;">
+
+<div id="pw-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:9999;pointer-events:auto;">
   <div style="background:#1e293b;padding:40px;border-radius:16px;text-align:center;width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
     <div style="font-size:32px;margin-bottom:12px;">📡</div>
     <div style="color:#e2e8f0;font-size:18px;font-weight:700;margin-bottom:6px;">光回線知識研修クイズ</div>
@@ -199,10 +187,27 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 <div id="app">
 
+<!-- ===== エフェクト要素（#app内・position:fixed → iOSのsafe area帯問題を解決） ===== -->
+<video id="vid-confetti" class="effect-video" playsinline webkit-playsinline muted preload="auto">
+  <source src="https://appleton9365.github.io/hikari-quiz/confetti07.mp4" type="video/mp4">
+</video>
+<video id="vid-rain" class="effect-video" playsinline webkit-playsinline muted loop preload="auto">
+  <source src="https://appleton9365.github.io/hikari-quiz/rain1.mp4" type="video/mp4">
+</video>
+<video id="vid-fire" class="effect-video" playsinline webkit-playsinline muted loop preload="auto">
+  <source src="https://appleton9365.github.io/hikari-quiz/fire01.mp4" type="video/mp4">
+</video>
+<div id="flash-overlay"></div>
+<div id="streak-popup">
+  <div id="streak-fires">🔥🔥🔥</div>
+  <div id="streak-text">3連続正解！</div>
+  <div id="streak-combo">STREAK COMBO</div>
+</div>
+
 <!-- タイトル画面 -->
 <div id="screen-title">
   <div class="logo-badge">第三営業部 新人研修</div>
-  <div class="title-main">光回線<br>マスタークイズv22</div>
+  <div class="title-main">光回線<br>マスタークイズv23</div>
   <div class="title-sub">727問バンクからランダム25問出題<br>開通前確認の知識を総チェック！</div>
   <div class="mode-grid">
     <button class="mode-btn full" onclick="startQuiz(-1)">全セット（標準）<span class="mode-label">基礎〜鬼パートまで順番に全25問</span></button>
