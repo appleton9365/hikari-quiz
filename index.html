@@ -7,24 +7,24 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>光回線クイズ｜第三営業部 新人研修 v32</title>
+<title>光回線マスタークイズ｜第三営業部 新人研修 v33</title>
 <style>
 :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1c2538;--border:#2a3550;--accent:#3b82f6;--accent2:#60a5fa;--correct:#22c55e;--wrong:#ef4444;--gold:#f59e0b;--text:#e2e8f0;--muted:#94a3b8;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background-color:#0a0e1a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif}
 body{font-family:'Yu Gothic','YuGothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px;-webkit-text-size-adjust:100%;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom))}
 #app{width:100%;max-width:700px}
-#screen-title{text-align:center;padding:40px 20px}
-.logo-badge{display:inline-block;background:linear-gradient(135deg,#1e3a5f,#2563eb);border:1px solid var(--accent);border-radius:999px;padding:6px 18px;font-size:11px;letter-spacing:.1em;color:var(--accent2);text-transform:uppercase;margin-bottom:20px}
+#screen-title{text-align:center;padding:14px 20px;min-height:calc(100vh - 32px);min-height:calc(100dvh - 32px);display:flex;flex-direction:column;justify-content:center}
+.logo-badge{display:inline-block;background:linear-gradient(135deg,#1e3a5f,#2563eb);border:1px solid var(--accent);border-radius:999px;padding:6px 18px;font-size:11px;letter-spacing:.1em;color:var(--accent2);text-transform:uppercase;margin-bottom:12px}
 .title-main{font-size:clamp(26px,6vw,40px);font-weight:800;line-height:1.18;letter-spacing:.02em;margin-bottom:10px;background:linear-gradient(135deg,#7dd3fc,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:0 2px 28px rgba(59,130,246,.22)}
-.title-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.8}
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.mode-btn{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 10px;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:border-color .15s,background .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;line-height:1.4}
+.title-sub{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.8}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}
+.mode-btn{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 10px;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:border-color .15s,background .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;line-height:1.4}
 .mode-btn:hover,.mode-btn:active{border-color:var(--accent);background:#1a2744}
-.mode-btn.full{grid-column:1/-1;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent;color:white;font-size:15px;padding:16px}
+.mode-btn.full{grid-column:1/-1;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent;color:white;font-size:15px;padding:13px}
 .mode-btn .mode-label{font-size:10px;color:var(--muted);display:block;margin-top:2px;font-weight:400}
 .mode-btn.full .mode-label{color:rgba(255,255,255,.7)}
-.mode-btn.full-ghost{grid-column:1/-1;background:var(--surface2);border:1.5px solid #991b1b;color:#f87171;font-size:15px;padding:16px}
+.mode-btn.full-ghost{grid-column:1/-1;background:var(--surface2);border:1.5px solid #991b1b;color:#f87171;font-size:15px;padding:13px}
 .mode-btn.full-ghost:hover,.mode-btn.full-ghost:active{background:#3a1e1e;border-color:#ef4444}
 .mode-btn.full-ghost .mode-label{color:#f8717199;display:block;margin-top:2px;font-weight:400}
 #screen-quiz{padding:8px 0}
@@ -126,7 +126,7 @@ body.shaking{animation:shake 0.5s ease}
 #streak-fires{font-size:28px;line-height:1;white-space:nowrap;letter-spacing:2px}
 #streak-text{font-size:clamp(18px,5vw,26px);font-weight:900;color:#f97316;white-space:nowrap;margin-top:4px;text-shadow:0 0 20px rgba(249,115,22,0.8)}
 #streak-combo{font-size:11px;font-weight:700;color:#fb923c;letter-spacing:.2em;white-space:nowrap;margin-top:4px;opacity:.8}
-#bgnet{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease}#app{position:relative;z-index:1}.title-ver{display:inline-block;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:11px;letter-spacing:.18em;color:var(--accent2);border:1px solid var(--border);border-radius:6px;padding:2px 9px;margin-bottom:22px;opacity:.85}</style>
+#bgnet{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease}#app{position:relative;z-index:1}.title-ver{display:inline-block;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:11px;letter-spacing:.18em;color:var(--accent2);border:1px solid var(--border);border-radius:6px;padding:2px 9px;margin-bottom:10px;opacity:.85}</style>
 </head>
 <body>
 <div id="pw-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:9999;">
@@ -145,7 +145,7 @@ async function checkPw(){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
   const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   if(hex === 'bf9275cbae8cb9c3f1f4d2a4a41f46997f3760a727932d9095aeb8da412ed858'){
-    document.getElementById('pw-screen').style.display='none';
+    document.getElementById('pw-screen').style.display='none';try{if('scrollRestoration' in history)history.scrollRestoration='manual';}catch(e){}window.scrollTo(0,0);
   } else {
     document.getElementById('pw-error').textContent='パスワードが違います';
     document.getElementById('pw-input').value='';
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div id="screen-title">
   <div class="logo-badge">第三営業部 新人研修</div>
   <div class="title-main">光回線<br>マスタークイズ</div>
-  <div class="title-ver">v32</div>
+  <div class="title-ver">v33</div>
   <div class="title-sub">全719問から、実力に合わせて10問を出題。<br>解くほどに難易度が調整され、苦手な分野を重点的に鍛える！</div>
   <div class="mode-grid">
     <button class="mode-btn full" onclick="startQuiz(-1)">標準コース<span class="mode-label">実力に合わせて全分野から10問出題</span></button>
@@ -460,7 +460,7 @@ function startQuiz(mode){
 }
 
 function restartQuiz(){_stopAllVid();_streakFireOn=false;_streak=0;showScreen('title');}
-function showScreen(n){['title','quiz','cooldown','finale','review'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));document.getElementById('screen-'+n).classList.remove('hidden');}
+function showScreen(n){['title','quiz','cooldown','finale','review'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));document.getElementById('screen-'+n).classList.remove('hidden');window.scrollTo(0,0);}
 
 function renderStars(diff){
   const oni=diff>=6||state.mode===4;const max=oni?7:5;const d=Math.min(diff,max);
@@ -468,6 +468,7 @@ function renderStars(diff){
 }
 
 function renderQ(){
+  window.scrollTo(0,0);
   const qi=state.current;
   if(qi>=state.questions.length){showFinale();return;}
   const q=state.questions[qi];
